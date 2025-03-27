@@ -13,7 +13,8 @@ set(CMAKE_CUDA_ARCHITECTURES 50)  # Target common NVIDIA GPU architectures (adju
 # Add executable from source files
 file(GLOB_RECURSE CPP_SOURCES "src/*.cpp")    # C++ sources
 file(GLOB_RECURSE CUDA_SOURCES "src/*.cu")    # CUDA sources
-add_executable(${PROJECT_NAME} ${CPP_SOURCES} ${CUDA_SOURCES})
+file(GLOB_RECURSE HEADER_FILES "src/*.h" "src/*.hpp")  # Header files
+add_executable(${PROJECT_NAME} ${CPP_SOURCES} ${HEADER_FILES} ${CUDA_SOURCES})
 
 # Find and link GLM, GLFW, GLEW for OpenGL
 find_package(glfw3 CONFIG REQUIRED)
