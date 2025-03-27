@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)  # Minimum CMake version
-project(Laplace LANGUAGES CXX CUDA)  # Add CUDA language
+project(Stability LANGUAGES CXX CUDA)  # Add CUDA language
 
 # C++ settings
 set(CMAKE_CXX_STANDARD 17)            
@@ -24,7 +24,7 @@ find_package(glm CONFIG REQUIRED)
 find_package(CUDA REQUIRED)
 
 # Link libraries
-target_link_libraries(Laplace PRIVATE 
+target_link_libraries(${PROJECT_NAME} PRIVATE 
     glfw 
     GLEW::GLEW 
     glm::glm 
