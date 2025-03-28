@@ -49,7 +49,10 @@ Window::Window(int width, int height) : m_width(width), m_height(height), m_curs
 		throw std::runtime_error("GLFW initialization failed");
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-	m_handle = glfwCreateWindow(width, height, "Stability", nullptr, nullptr);
+	std::string title("Van der Pol stability, param = ");
+	std::string sParam = std::to_string(m_param);
+	title += sParam;
+	m_handle = glfwCreateWindow(width, height, title.c_str(), nullptr, nullptr);
 	if (!m_handle)
 		throw std::runtime_error("Window creation failure");
 	glfwMakeContextCurrent(m_handle);
@@ -117,6 +120,10 @@ void Window::keyCallback(GLFWwindow* window, int key, int scancode, int action, 
 		if (key == GLFW_KEY_UP) thisWindow->m_param += thisWindow->m_delta;
 		if (key == GLFW_KEY_DOWN) thisWindow->m_param -= thisWindow->m_delta;
 	}
+	std::string title("Van der Pol stability, param = ");
+	std::string sParam = std::to_string(thisWindow->m_param);
+	title += sParam;
+	glfwSetWindowTitle(thisWindow->m_handle, title.c_str());
 }
 
 void Window::mouseMoveCallback(GLFWwindow* window, double x, double y)
