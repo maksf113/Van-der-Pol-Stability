@@ -16,9 +16,8 @@ private:
 	std::unordered_map<std::string, int> m_uniformLocationCache;
 	int getUniformLocation(const std::string& name);
 public:
-	Shader() {}
+	Shader() = default;
 	Shader(const std::string&, const std::string&);
-	Shader(const std::string&, const std::string&, const std::string&);
 	~Shader();
 	void bind() const;
 	void unbind() const;
@@ -114,67 +113,6 @@ Shader::Shader(const std::string& vertPath, const std::string& fragPath)
 		printProgramLog(m_id);
 	}
 	GL(glDeleteShader(vs));
-	GL(glDeleteShader(fs));
-}
-
-Shader::Shader(const std::string& vertPath, const std::string& geomPath, const std::string& fragPath)
-{
-	const std::string vertSource = readShaderSource(vertPath);
-	const std::string geomSource = readShaderSource(geomPath);
-	const std::string fragSource = readShaderSource(fragPath);
-	const char* vertSrcCstr = vertSource.c_str();
-	const char* geomSrcCstr = geomSource.c_str();
-	const char* fragSrcCstr = fragSource.c_str();
-	GL(GLuint vs = glCreateShader(GL_VERTEX_SHADER));
-	GL(GLuint gs = glCreateShader(GL_GEOMETRY_SHADER));
-	GL(GLuint fs = glCreateShader(GL_FRAGMENT_SHADER));
-	GLint vertCompiled;
-	GLint geomCompiled;
-	GLint fragCompiled;
-	GLint linked;
-
-	GL(glShaderSource(vs, 1, &vertSrcCstr, NULL));
-	GL(glCompileShader(vs));
-	GL(glGetShaderiv(vs, GL_COMPILE_STATUS, &vertCompiled));
-	if (vertCompiled != 1)
-	{
-		std::cout << "Veretx compilation failed" << std::endl;
-		printShaderLog(vs);
-	}
-
-	GL(glShaderSource(gs, 1, &geomSrcCstr, NULL));
-	GL(glCompileShader(gs));
-	GL(glGetShaderiv(gs, GL_COMPILE_STATUS, &geomCompiled));
-
-	if (geomCompiled != 1)
-	{
-		std::cout << "Geometry compilation failed" << std::endl;
-		printShaderLog(gs);
-	}
-
-	GL(glShaderSource(fs, 1, &fragSrcCstr, NULL));
-	GL(glCompileShader(fs));
-	GL(glGetShaderiv(fs, GL_COMPILE_STATUS, &fragCompiled));
-	if (fragCompiled != 1)
-	{
-		std::cout << "Fragment compilation failed" << std::endl;
-		printShaderLog(fs);
-	}
-
-	GL(m_id = glCreateProgram());
-	GL(glAttachShader(m_id, vs));
-	GL(glAttachShader(m_id, gs));
-	GL(glAttachShader(m_id, fs));
-	GL(glLinkProgram(m_id));
-
-	GL(glGetProgramiv(m_id, GL_LINK_STATUS, &linked));
-	if (linked != 1)
-	{
-		std::cout << "Program linking failed" << std::endl;
-		printProgramLog(m_id);
-	}
-	GL(glDeleteShader(vs));
-	GL(glDeleteShader(gs));
 	GL(glDeleteShader(fs));
 }
 

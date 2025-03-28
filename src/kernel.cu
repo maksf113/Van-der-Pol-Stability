@@ -31,26 +31,24 @@ __device__
 float scale(int i, int w) { return 2.0f * len * (float(i) / w - 0.5f); }
 // RHS for the equation
 __device__
-float f(float x, float y, float param, int sys)
+float f(float x, float y, float param)
 {
-    if (sys == 1) return x - 2 * param * y; // negative stiffness (reversed pendulum)
-    if (sys == 2) return -x + param * (1.0f - x * x) * y; // van der Pol
-    else return -x - 2 * param * y; // pendulum
+    return -x + param * (1.0f - x * x) * y; // van der Pol
 }
 // explicit Euler solver
 __device__
-float2 euler(float x, float y, float dt, float tFinal, float param, int sys)
+float2 euler(float x, float y, float dt, float tFinal, float param)
 {
     for (float t = 0.0f; t <= tFinal; t += dt)
     {
         x = x + y * dt;
-        y = y + f(x, y, param, sys) * dt;
+        y = y + f(x, y, param) * dt;
     }
     return make_float2(x, y);
 }
 
 __global__
-void stabilityKernel(uchar4* d_out, int width, int height, float param, int sys)
+void stabilityKernel(uchar4* d_out, int width, int height, float param)
 {
     const int col = blockIdx.x * blockDim.x + threadIdx.x;
     const int row = blockIdx.y * blockDim.y + threadIdx.y;
@@ -63,7 +61,7 @@ void stabilityKernel(uchar4* d_out, int width, int height, float param, int sys)
     const float y0 = scale(row, height);
     // initial distance from stable solution (0,0)
     const float dist0 = sqrt(x0 * x0 + y0 * y0);
-    const float2 finalPos = euler(x0, y0, dt, finalTime, param, sys);
+    const float2 finalPos = euler(x0, y0, dt, finalTime, param);
     const float distFinal = sqrt(finalPos.x * finalPos.x + finalPos.y * finalPos.y);
     // assign color based on distance change
     const float distRatio = distFinal / dist0;
@@ -74,41 +72,10 @@ void stabilityKernel(uchar4* d_out, int width, int height, float param, int sys)
     d_out[i].w = 255; // alpha channel
 }
 
-void stabilityKernelLauncher(uchar4* d_out, int width, int height, float param, int sys)
+void stabilityKernelLauncher(uchar4* d_out, int width, int height, float param)
 {
     const dim3 blockSize = dim3(TX, TY);
     const dim3 gridSize = dim3((width + TX - 1) / TX, (height + TY - 1) / TY);
-    stabilityKernel << <gridSize, blockSize >> > (d_out, width, height, param, sys);
-    CUDA(cudaGetLastError()); // Check for launch errors
-    CUDA(cudaDeviceSynchronize()); // Check for runtime errors
-}
-
-
-__global__
-void distKernel(uchar4* d_out, int w, int h, int2 pos)
-{
-    const int c = blockIdx.x * blockDim.x + threadIdx.x;
-    const int r = blockIdx.y * blockDim.y + threadIdx.y;
-    if ((c >= w) || (r >= h))
-        return;
-    const int i = r * w + c;
-
-    const int d = sqrtf((c - pos.x) * (c - pos.x) + (r - pos.y) * (r - pos.y));
-
-    const unsigned char intensity = clip(255 - d);
-    d_out[i].x = intensity;
-    d_out[i].y = intensity;
-    d_out[i].z = 0;
-    d_out[i].w = 255;
-}
-
-void distKernelLauncher(uchar4* d_out, int w, int h, int2 pos)
-{
-    const dim3 blockSize(TX, TY);
-    const int bx = (w + TX - 1) / TX;
-    const int by = (h + TY - 1) / TY;
-    const dim3 gridSize(bx, by);
-    distKernel << <gridSize, blockSize >> > (d_out, w, h, pos);
-    CUDA(cudaGetLastError()); // Check for launch errors
-    CUDA(cudaDeviceSynchronize()); // Check for runtime errors
+    stabilityKernel << <gridSize, blockSize >> > (d_out, width, height, param);
+    CUDA(cudaDeviceSynchronize()); 
 }

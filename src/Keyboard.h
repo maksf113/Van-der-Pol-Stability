@@ -38,7 +38,7 @@ bool Keyboard::key(int key)
 bool Keyboard::keyChanged(int key)
 {
 	bool temp = s_keysChanged[key];
-	s_keys[key] = false;
+	s_keysChanged[key] = false;
 	return temp;
 }
 bool Keyboard::keyPressed(int key)

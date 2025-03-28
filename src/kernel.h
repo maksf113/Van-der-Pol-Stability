@@ -12,8 +12,6 @@
     } \
 }
 
-struct int2;
 struct uchar4;
 
-void stabilityKernelLauncher(uchar4* d_out, int width, int height, float param, int sys);
-void kernelLauncher(uchar4* d_out, int w, int h, int2 pos);
+void stabilityKernelLauncher(uchar4* d_out, int width, int height, float param);
